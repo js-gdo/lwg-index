@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lin 的站点导航</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: rgba(17, 24, 39, 0.85);
+        --card: rgba(30, 41, 59, 0.9);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #7dd3fc;
+        --accent-strong: #38bdf8;
+        --shadow: rgba(15, 23, 42, 0.45);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(180deg, #020817 0%, #0f172a 100%);
+        color: var(--text);
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        padding: 48px 20px 64px;
+      }
+
+      .container {
+        width: min(1100px, 100%);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        letter-spacing: 0.04em;
+      }
+
+      .header p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+
+      .search {
+        width: min(500px, 100%);
+        padding: 14px 18px;
+        border: 1px solid rgba(125, 211, 252, 0.35);
+        background: rgba(15, 23, 42, 0.7);
+        color: var(--text);
+        border-radius: 999px;
+        font-size: 1rem;
+        outline: none;
+        box-shadow: 0 10px 30px var(--shadow);
+      }
+
+      .search:focus {
+        border-color: rgba(125, 211, 252, 0.9);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+      }
+
+      .site-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+      }
+
+      .site-card {
+        display: block;
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+        padding: 18px 18px 16px;
+        color: var(--text);
+        text-decoration: none;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 16px 35px var(--shadow);
+      }
+
+      .site-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(125, 211, 252, 0.8);
+        box-shadow: 0 18px 40px rgba(14, 116, 144, 0.25);
+      }
+
+      .site-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--accent);
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .site-card h3 {
+        margin: 14px 0 10px;
+        font-size: 1.28rem;
+      }
+
+      .site-card p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.6;
+        min-height: 48px;
+      }
+
+      .site-card small {
+        display: inline-block;
+        color: var(--accent-strong);
+        word-break: break-all;
+      }
+
+      .empty {
+        text-align: center;
+        color: var(--muted);
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px dashed rgba(148, 163, 184, 0.3);
+        border-radius: 16px;
+        padding: 28px 20px;
+      }
+
+      .status {
+        margin-top: 24px;
+        text-align: center;
+        color: var(--muted);
+        min-height: 24px;
+      }
+
+      @media (max-width: 640px) {
+        body { padding-top: 32px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>Lin 的站点导航</h1>
+        <p>聚合我的站点与服务入口</p>
+      </header>
+
+      <div class="toolbar">
+        <input id="search" class="search" type="text" placeholder="搜索站点名称、介绍或链接…" />
+      </div>
+
+      <main id="siteList" class="site-grid" aria-live="polite"></main>
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+
+    <script>
+      const fallbackSites = [
+        { id: 'blog', url: 'blog.lin114514.top', intro: '个人博客' },
+        { id: 'chat', url: 'chat.lin114514.top', intro: '聊天网站，9:00~21:30开放' },
+        { id: 'docs', url: 'docs.lin114514.top', intro: '文档(通用)' },
+        { id: 'fsdoc', url: 'fsdoc.lin114514.top', intro: 'FutureServer文档' },
+        { id: 'fsi', url: 'fsi.lin114514.top', intro: 'FutureServer主页' },
+        { id: 'benben', url: 'benben.lj1.cc.cd', intro: '犇犇(动态)系统' },
+        { id: 'sl', url: 'sl.lj1.cc.cd', intro: '现代化社区软件(感谢DeepSeek)' },
+      ];
+
+      let siteData = fallbackSites;
+      const siteList = document.getElementById('siteList');
+      const searchInput = document.getElementById('search');
+      const statusText = document.getElementById('status');
+
+      function renderSites(sites) {
+        const query = (searchInput.value || '').trim().toLowerCase();
+        const filtered = sites.filter((site) => {
+          const haystack = `${site.id} ${site.intro} ${site.url}`.toLowerCase();
+          return haystack.includes(query);
+        });
+
+        if (!filtered.length) {
+          siteList.innerHTML = '<div class="empty">未找到匹配站点</div>';
+          return;
+        }
+
+        siteList.innerHTML = filtered.map((site) => `
+          <a class="site-card" href="https://${site.url}" target="_blank" rel="noreferrer" aria-label="访问 ${site.id}">
+            <span class="site-tag">${site.id}</span>
+            <h3>${site.id}</h3>
+            <p>${site.intro}</p>
+            <small>${site.url}</small>
+          </a>
+        `).join('');
+      }
+
+      async function loadSites() {
+        try {
+          const response = await fetch('./website.json', { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error('Unable to fetch website.json');
+          }
+
+          const data = await response.json();
+          siteData = Array.isArray(data.sites) ? data.sites : fallbackSites;
+          renderSites(siteData);
+          statusText.textContent = '';
+        } catch (error) {
+          siteData = fallbackSites;
+          renderSites(siteData);
+          statusText.textContent = '感谢GitHub Copilot';
+        }
+      }
+
+      searchInput.addEventListener('input', () => renderSites(siteData));
+      loadSites();
+    </script>
+  </body>
+</html>
